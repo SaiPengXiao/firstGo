@@ -7,7 +7,7 @@ import RegisterPage from '../pages/RegisterPage'
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/firstGo">
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route
