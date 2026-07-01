@@ -41,9 +41,7 @@ export default function HomePage() {
           <Title level={3}>欢迎，{user?.username ?? '用户'}</Title>
           <Paragraph type="secondary">邮箱：{user?.email}</Paragraph>
           <Paragraph>
-            当前项目已接入 <Text code>React Router</Text> 与{' '}
-            <Text code>Redux Toolkit</Text>，登录状态保存在 Redux 与
-            localStorage 中。
+            张晓鹏诶！张晓鹏诶！张晓鹏诶！张晓鹏诶！张晓鹏诶！张晓鹏诶！张晓鹏诶！张晓鹏诶！张晓鹏诶！
           </Paragraph>
         </Card>
       </Content>
