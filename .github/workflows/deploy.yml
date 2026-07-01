@@ -26,8 +26,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          # 指定缓存路径为子目录的 lock 文件
+          cache: npm
           cache-dependency-path: front/react/package-lock.json
 
       - name: Install dependencies
@@ -36,13 +35,13 @@ jobs:
       - name: Build
         run: cd front/react && npm run build
 
-      - name: Copy 404 for SPA routing
+      - name: Copy 404 for SPA
         run: cp front/react/dist/index.html front/react/dist/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: front/react/dist   # ✅ 关键：上传子目录的 dist
+          path: front/react/dist
 
       - name: Deploy
         uses: actions/deploy-pages@v4
