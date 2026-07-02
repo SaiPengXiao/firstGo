@@ -25,16 +25,14 @@ jobs:
           cache: npm
           cache-dependency-path: front/react/package-lock.json
 
-      # ✅ 强制跳过 lockfile 平台校验：先删 lockfile，再 install
       - name: Prepare & Build
         run: |
           cd front/react
-          # 1. 删除 lockfile 和 node_modules（避免 ci 的平台校验）
+          # 安全删除原 lockfile（避免平台校验失败）
           rm -f package-lock.json
           rm -rf node_modules
-          # 2. 安装（忽略 scripts + 兼容性参数）
+          # 重新安装（无 lockfile → npm 自动适配当前平台）
           npm install --no-fund --no-audit --legacy-peer-deps --ignore-scripts
-          # 3. 构建
           npm run build
 
       - name: Copy 404
