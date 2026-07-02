@@ -25,9 +25,12 @@ jobs:
           cache: npm
           cache-dependency-path: front/react/package-lock.json
 
+      # ✅ 核心修复：强制指定平台为 linux-x64，绕过 darwin-arm64 绑定报错
       - name: Install and Build
         run: |
           cd front/react
+          npm config set platform linux
+          npm config set arch x64
           npm ci
           npm run build
 
