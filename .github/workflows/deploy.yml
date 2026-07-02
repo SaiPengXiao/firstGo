@@ -25,14 +25,10 @@ jobs:
           cache: npm
           cache-dependency-path: front/react/package-lock.json
 
-      - name: Prepare & Build
+      - name: Install and Build
         run: |
           cd front/react
-          # 安全删除原 lockfile（避免平台校验失败）
-          rm -f package-lock.json
-          rm -rf node_modules
-          # 重新安装（无 lockfile → npm 自动适配当前平台）
-          npm install --no-fund --no-audit --legacy-peer-deps --ignore-scripts
+          npm ci
           npm run build
 
       - name: Copy 404
