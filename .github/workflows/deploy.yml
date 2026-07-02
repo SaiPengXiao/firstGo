@@ -25,14 +25,12 @@ jobs:
           cache: npm
           cache-dependency-path: front/react/package-lock.json
 
-      # ✅ 修复后：通过环境变量指定平台
+      # ✅ 终极修复：跳过原生绑定安装，使用 JS fallback 构建
       - name: Install and Build
-        env:
-          npm_config_platform: linux
-          npm_config_arch: x64
         run: |
           cd front/react
-          npm ci
+          rm -rf node_modules/@rolldown/binding-* 2>/dev/null || true
+          npm install --no-fund --no-audit --legacy-peer-deps --ignore-scripts
           npm run build
 
       - name: Copy 404
