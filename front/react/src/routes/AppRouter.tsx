@@ -10,6 +10,8 @@ const RegisterPage = lazy(() => import('../pages/RegisterPage'))
 const PostListPage = lazy(() => import('../pages/PostListPage'))
 const PostDetailPage = lazy(() => import('../pages/PostDetailPage'))
 const PostEditorPage = lazy(() => import('../pages/PostEditorPage'))
+const MenuOrderPage = lazy(() => import('../pages/MenuOrderPage'))
+const MenuManagePage = lazy(() => import('../pages/MenuManagePage'))
 
 function RouteFallback() {
   return (
@@ -77,6 +79,22 @@ export default function AppRouter() {
             element={
               <ProtectedRoute>
                 <PostEditorPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/menu"
+            element={
+              <ProtectedRoute>
+                <MenuOrderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/menu/manage"
+            element={
+              <ProtectedRoute>
+                <MenuManagePage />
               </ProtectedRoute>
             }
           />

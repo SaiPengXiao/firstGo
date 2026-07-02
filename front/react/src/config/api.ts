@@ -1,7 +1,17 @@
 /**
- * 后端 API 根地址，来自环境变量 VITE_API_BASE_URL。
- * - 开发：`.env.development` 留空 → axios 相对路径，由 Vite 代理到本地或 VITE_API_BASE_URL
- * - 生产：`.env.production` 中配置 Railway 等线上地址
+ * 后端 API 根地址
+ * - 开发：默认 http://localhost:8080（可用 .env.local 覆盖）
+ * - 生产：`.env.production` 中的 VITE_API_BASE_URL
  */
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ?? ''
+function resolveApiBaseUrl(): string {
+  const raw = import.meta.env.VITE_API_BASE_URL?.trim()
+  const fromEnv = raw ? raw.replace(/\/$/, '') : ''
+
+  if (import.meta.env.DEV) {
+    return fromEnv || 'http://localhost:8080'
+  }
+
+  return fromEnv
+}
+
+export const API_BASE_URL = resolveApiBaseUrl()

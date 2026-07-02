@@ -9,6 +9,7 @@ import {
   ArrowRightOutlined,
   FireOutlined,
   CompassOutlined,
+  RestOutlined,
 } from '@ant-design/icons'
 import { Avatar, Carousel, Dropdown, Layout, notification, Typography } from 'antd'
 import { useEffect } from 'react'
@@ -50,6 +51,14 @@ const sections = [
     icon: <ToolOutlined />,
     gradient: 'linear-gradient(135deg, #f093fb, #f5576c)',
     shadow: '0 8px 32px rgba(240, 147, 251, 0.25)',
+  },
+  {
+    key: 'menu',
+    title: '今日点菜',
+    desc: '配置菜单 · 随心点餐',
+    icon: <RestOutlined />,
+    gradient: 'linear-gradient(135deg, #fa8c16, #ffd666)',
+    shadow: '0 8px 32px rgba(250, 140, 22, 0.25)',
   },
 ]
 
@@ -124,7 +133,7 @@ export default function HomePage() {
             </div>
             <div className="home-hero-stat-div" />
             <div className="home-hero-stat">
-              <span className="home-hero-stat-num">3</span>
+              <span className="home-hero-stat-num">4</span>
               <span className="home-hero-stat-label">大板块</span>
             </div>
           </div>
@@ -183,7 +192,9 @@ export default function HomePage() {
               <div
                 key={s.key}
                 className="section-card"
-                onClick={() => navigate(`/section/${s.key}`)}
+                onClick={() =>
+                  navigate(s.key === 'menu' ? '/menu' : `/section/${s.key}`)
+                }
               >
                 <div
                   className="section-card-glow"

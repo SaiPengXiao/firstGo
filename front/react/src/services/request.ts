@@ -18,7 +18,11 @@ function getErrorMessage(error: AxiosError<ApiErrorBody>): string {
     return error.response.data.message
   }
   if (error.response) {
-    return `请求失败（${error.response.status}）`
+    const status = error.response.status
+    if (status === 404) {
+      return '接口不存在 (404)：请确认后端已部署该路由并已重启服务'
+    }
+    return `请求失败（${status}）`
   }
   if (error.request) {
     return '无法连接服务器，请确认后端已启动（默认 http://localhost:8080）'
@@ -69,5 +73,19 @@ export async function post<T>(
 /** 便捷 GET */
 export async function get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
   const res = await request.get<T>(url, config)
+  return res.data
+}
+
+export async function put<T>(
+  url: string,
+  data?: unknown,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  const res = await request.put<T>(url, data, config)
+  return res.data
+}
+
+export async function del<T = void>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  const res = await request.delete<T>(url, config)
   return res.data
 }

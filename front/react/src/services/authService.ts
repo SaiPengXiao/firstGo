@@ -1,5 +1,5 @@
 import type { LoginFormValues, RegisterFormValues, User } from '../types/auth'
-import { post } from './request'
+import { get, post } from './request'
 
 interface AuthApiResponse {
   user: User
@@ -23,4 +23,9 @@ export async function registerApi(
     email: values.email,
     password: values.password,
   })
+}
+
+/** 当前登录用户（需 Bearer token，由 request 拦截器自动附带） */
+export async function getMeApi(): Promise<User> {
+  return get<User>('/api/auth/me')
 }
