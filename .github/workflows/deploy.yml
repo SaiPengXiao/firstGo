@@ -25,12 +25,16 @@ jobs:
           cache: npm
           cache-dependency-path: front/react/package-lock.json
 
-      # ✅ 终极修复：跳过原生绑定安装，使用 JS fallback 构建
-      - name: Install and Build
+      # ✅ 强制跳过 lockfile 平台校验：先删 lockfile，再 install
+      - name: Prepare & Build
         run: |
           cd front/react
-          rm -rf node_modules/@rolldown/binding-* 2>/dev/null || true
+          # 1. 删除 lockfile 和 node_modules（避免 ci 的平台校验）
+          rm -f package-lock.json
+          rm -rf node_modules
+          # 2. 安装（忽略 scripts + 兼容性参数）
           npm install --no-fund --no-audit --legacy-peer-deps --ignore-scripts
+          # 3. 构建
           npm run build
 
       - name: Copy 404
