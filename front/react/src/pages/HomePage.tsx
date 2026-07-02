@@ -2,12 +2,15 @@ import {
   LogoutOutlined,
   UserOutlined,
   BulbOutlined,
+  EditOutlined,
   ExperimentOutlined,
   ToolOutlined,
   EyeOutlined,
-  RightOutlined,
+  ArrowRightOutlined,
+  FireOutlined,
+  CompassOutlined,
 } from '@ant-design/icons'
-import { Button, Card, Carousel, Col, Layout, notification, Row, Space, Tag, Typography } from 'antd'
+import { Avatar, Carousel, Dropdown, Layout, notification, Typography } from 'antd'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { mockHotPosts } from '../services/postData'
@@ -17,45 +20,36 @@ import { useAppDispatch, useAppSelector } from '../store/hooks'
 const { Header, Content } = Layout
 const { Title, Paragraph, Text } = Typography
 
-const sectionMeta: Record<string, { title: string; icon: React.ReactNode; color: string }> = {
-  thinking: {
-    title: '我的思考',
-    icon: <BulbOutlined />,
-    color: '#667eea',
-  },
-  collab: {
-    title: '未来共研室',
-    icon: <ExperimentOutlined />,
-    color: '#52c41a',
-  },
-  toolbox: {
-    title: '工具箱 · 我的实践',
-    icon: <ToolOutlined />,
-    color: '#fa8c16',
-  },
+const carouselBadge: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
+  thinking: { icon: <BulbOutlined />, label: '我的思考', color: '#667eea' },
+  collab: { icon: <ExperimentOutlined />, label: '未来共研室', color: '#38ef7d' },
+  toolbox: { icon: <ToolOutlined />, label: '工具箱', color: '#f093fb' },
 }
 
 const sections = [
   {
     key: 'thinking',
     title: '我的思考',
-    icon: <BulbOutlined style={{ fontSize: 36, color: '#667eea' }} />,
-    description: '记录日常的灵感碎片、技术反思与成长感悟。',
-    color: '#667eea',
+    desc: '记录日常灵感与技术反思',
+    icon: <BulbOutlined />,
+    gradient: '#667eea',
+    shadow: '0 8px 32px rgba(102, 126, 234, 0.25)',
   },
   {
     key: 'collab',
     title: '未来共研室',
-    icon: <ExperimentOutlined style={{ fontSize: 36, color: '#52c41a' }} />,
-    description: '开放协作的研究空间，一起探索前沿技术与创新方案。',
-    color: '#52c41a',
+    desc: '前沿探索与开放协作',
+    icon: <ExperimentOutlined />,
+    gradient: 'linear-gradient(135deg, #11998e, #38ef7d)',
+    shadow: '0 8px 32px rgba(17, 153, 142, 0.25)',
   },
   {
     key: 'toolbox',
     title: '工具箱 · 我的实践',
-    icon: <ToolOutlined style={{ fontSize: 36, color: '#fa8c16' }} />,
-    description: '实战中沉淀的工具集、项目经验与最佳实践汇总。',
-    color: '#fa8c16',
+    desc: '实战沉淀与经验汇总',
+    icon: <ToolOutlined />,
+    gradient: 'linear-gradient(135deg, #f093fb, #f5576c)',
+    shadow: '0 8px 32px rgba(240, 147, 251, 0.25)',
   },
 ]
 
@@ -82,70 +76,90 @@ export default function HomePage() {
     void navigate('/login', { replace: true })
   }
 
-  const handleSectionClick = (key: string) => {
-    navigate(`/section/${key}`)
-  }
+  const userMenuItems = [
+    { key: 'logout', label: '退出登录', icon: <LogoutOutlined />, onClick: handleLogout },
+  ]
 
   return (
     <Layout className="home-layout">
+      {/* ---- Header ---- */}
       <Header className="home-header">
-        <Title level={4} style={{ color: '#fff', margin: 0 }}>
-          首页
-        </Title>
-        <Space>
-          <Text style={{ color: 'rgba(255,255,255,0.85)' }}>
-            <UserOutlined /> {user?.username}
-          </Text>
-          <Button
-            type="default"
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-          >
-            退出登录
-          </Button>
-        </Space>
-      </Header>
-      <Content className="home-content">
-        <div className="home-hero">
-          <Title level={2} className="home-hero-title">
-            热门推荐
-          </Title>
-          <Paragraph className="home-hero-sub">
-            以下是各个板块中点击率最高的精选内容
-          </Paragraph>
+        <div className="home-header-brand">
+          <div className="home-header-logo">
+            <img src="/firstGo/favicon.svg" alt="墨规" width="33" height="33" style={{ display: 'block' }} />
+          </div>
+          <span className="home-header-name">墨规</span>
         </div>
 
-        <div className="home-carousel-wrapper">
-          <Carousel autoplay autoplaySpeed={4000} dots className="home-carousel">
+        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+          <div className="home-header-user">
+            <Avatar size={34} icon={<UserOutlined />} className="home-header-avatar" />
+            <span className="home-header-username">{user?.username}</span>
+          </div>
+        </Dropdown>
+      </Header>
+
+      <Content className="home-content">
+        {/* ---- Hero ---- */}
+        <section className="home-hero">
+          <div className="home-hero-badge">
+            <FireOutlined /> 热门推荐
+          </div>
+          <Title className="home-hero-title">
+            探索 <span className="home-hero-gradient">创造</span> 沉淀
+          </Title>
+          <Paragraph className="home-hero-sub">
+            一个属于技术人的数字花园，让每一次思考都值得被看见
+          </Paragraph>
+
+          <div className="home-hero-stats">
+            <div className="home-hero-stat">
+              <span className="home-hero-stat-num">35</span>
+              <span className="home-hero-stat-label">篇文章</span>
+            </div>
+            <div className="home-hero-stat-div" />
+            <div className="home-hero-stat">
+              <span className="home-hero-stat-num">128</span>
+              <span className="home-hero-stat-label">次讨论</span>
+            </div>
+            <div className="home-hero-stat-div" />
+            <div className="home-hero-stat">
+              <span className="home-hero-stat-num">3</span>
+              <span className="home-hero-stat-label">大板块</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Carousel ---- */}
+        <section className="home-carousel-wrap">
+          <Carousel autoplay autoplaySpeed={3000} dots className="home-carousel" effect="fade">
             {mockHotPosts.map((post) => {
-              const meta = sectionMeta[post.section]
+              const badge = carouselBadge[post.section]
               return (
                 <div key={post.id}>
                   <div
-                    className="carousel-slide"
-                    style={{ borderLeftColor: meta?.color }}
+                    className="carousel-card"
                     onClick={() => navigate(`/section/${post.section}`)}
                   >
-                    <div className="carousel-slide-body">
-                      <Tag color={meta?.color} className="carousel-tag">
-                        {meta?.icon} {meta?.title}
-                      </Tag>
-                      <Title level={3} className="carousel-title">
+                    <div className="carousel-card-shape" />
+                    <div className="carousel-card-content">
+                      <div className="carousel-card-eyebrow" style={{ color: badge.color }}>
+                        {badge.icon} <span>{badge.label}</span>
+                      </div>
+                      <Title level={2} className="carousel-card-title">
                         {post.title}
                       </Title>
-                      <Paragraph
-                        type="secondary"
-                        ellipsis={{ rows: 2 }}
-                        className="carousel-summary"
-                      >
+                      <Paragraph className="carousel-card-desc">
                         {post.summary}
                       </Paragraph>
-                      <div className="carousel-meta">
-                        <Text type="secondary">{post.author}</Text>
-                        <Space size={4}>
-                          <EyeOutlined />
-                          <Text type="secondary">{post.views} 次浏览</Text>
-                        </Space>
+                      <div className="carousel-card-meta">
+                        <div className="carousel-card-author">
+                          <Avatar size={28} icon={<UserOutlined />} />
+                          <span>{post.author}</span>
+                        </div>
+                        <span className="carousel-card-views">
+                          <EyeOutlined /> {post.views.toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -153,33 +167,49 @@ export default function HomePage() {
               )
             })}
           </Carousel>
-        </div>
+        </section>
 
-        <Row gutter={[24, 24]} className="home-sections">
-          {sections.map((section) => (
-            <Col xs={24} md={8} key={section.key}>
-              <Card
-                hoverable
-                className="home-section-card"
-                style={{ borderTop: `3px solid ${section.color}` }}
-                onClick={() => handleSectionClick(section.key)}
+        {/* ---- Sections ---- */}
+        <section className="home-sections">
+          <div className="home-sections-head">
+            <Title level={3} className="home-sections-title">
+              <CompassOutlined /> 探索板块
+            </Title>
+            <Text type="secondary">选择一个方向，开始你的探索之旅</Text>
+          </div>
+
+          <div className="home-sections-grid">
+            {sections.map((s) => (
+              <div
+                key={s.key}
+                className="section-card"
+                onClick={() => navigate(`/section/${s.key}`)}
               >
-                <div className="home-section-icon">{section.icon}</div>
-                <Title level={4} className="home-section-title">
-                  {section.title}
-                </Title>
-                <Paragraph type="secondary" className="home-section-desc">
-                  {section.description}
-                </Paragraph>
-                <div className="home-section-action">
-                  <Text style={{ color: section.color, fontSize: 14 }}>
-                    查看全部 <RightOutlined style={{ fontSize: 12 }} />
-                  </Text>
+                <div
+                  className="section-card-glow"
+                  style={{ background: s.gradient }}
+                />
+                <div
+                  className="section-card-icon"
+                  style={{ background: s.gradient, boxShadow: s.shadow }}
+                >
+                  {s.icon}
                 </div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+                <Title level={4} className="section-card-title">{s.title}</Title>
+                <Text type="secondary" className="section-card-desc">{s.desc}</Text>
+                <div className="section-card-link">
+                  <span>进入板块</span>
+                  <ArrowRightOutlined />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FAB */}
+        <div className="home-fab" onClick={() => navigate('/post/new')} title="发表文章">
+          <EditOutlined />
+        </div>
       </Content>
     </Layout>
   )

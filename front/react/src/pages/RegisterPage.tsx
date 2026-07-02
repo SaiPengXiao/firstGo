@@ -1,5 +1,5 @@
-import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Card, Form, Input, Typography, message } from 'antd'
+import { LockOutlined, MailOutlined, UserOutlined, ThunderboltOutlined, GithubOutlined, GoogleOutlined, WechatOutlined } from '@ant-design/icons'
+import { Button, Divider, Form, Input, Typography, message } from 'antd'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { registerSuccess } from '../store/authSlice'
@@ -7,7 +7,7 @@ import { useAppDispatch } from '../store/hooks'
 import type { RegisterFormValues } from '../types/auth'
 import { registerApi } from '../services/authService'
 
-const { Title, Text } = Typography
+const { Title, Text, Paragraph } = Typography
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
@@ -32,72 +32,147 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-page">
-      <Card className="auth-card" bordered={false}>
-        <Title level={3} style={{ textAlign: 'center', marginBottom: 24 }}>
-          注册
-        </Title>
-        <Form<RegisterFormValues>
-          form={form}
-          name="register"
-          layout="vertical"
-          onFinish={onFinish}
-          autoComplete="off"
-          size="large"
-        >
-          <Form.Item
-            name="username"
-            rules={[
-              { required: true, message: '请输入用户名' },
-              { min: 3, message: '用户名至少 3 个字符' },
-            ]}
-          >
-            <Input prefix={<UserOutlined />} placeholder="用户名" />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: '请输入邮箱' },
-              { type: 'email', message: '邮箱格式不正确' },
-            ]}
-          >
-            <Input prefix={<MailOutlined />} placeholder="邮箱" />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            rules={[
-              { required: true, message: '请输入密码' },
-              { min: 6, message: '密码至少 6 位' },
-            ]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="密码" />
-          </Form.Item>
-          <Form.Item
-            name="confirmPassword"
-            dependencies={['password']}
-            rules={[
-              { required: true, message: '请确认密码' },
-              ({ getFieldValue }) => ({
-                validator(_, value: string) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve()
-                  }
-                  return Promise.reject(new Error('两次密码不一致'))
-                },
-              }),
-            ]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="确认密码" />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block loading={loading}>
-              注册
-            </Button>
-          </Form.Item>
-        </Form>
-        <Text type="secondary">
-          已有账号？<Link to="/login">去登录</Link>
-        </Text>
-      </Card>
+      <div className="auth-container">
+        {/* Left Panel */}
+        <div className="auth-left">
+          <div className="auth-left-orb auth-left-orb-1" />
+          <div className="auth-left-orb auth-left-orb-2" />
+          <div className="auth-left-orb auth-left-orb-3" />
+
+          <div className="auth-left-ring" />
+
+          <div className="auth-left-inner">
+            <div className="auth-left-logo">
+              <div className="auth-left-logo-icon">
+                <ThunderboltOutlined />
+              </div>
+              <span className="auth-left-logo-text">DevHub</span>
+            </div>
+
+            <div className="auth-left-quote">
+              <Title level={1} className="auth-left-title">
+                加入<br />我们
+              </Title>
+              <Paragraph className="auth-left-desc">
+                记录技术思考，沉淀实战经验，一起成长。
+              </Paragraph>
+            </div>
+
+            <div className="auth-left-pills">
+              <span className="auth-left-pill">分享见解</span>
+              <span className="auth-left-pill">协作研究</span>
+              <span className="auth-left-pill">共建工具</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel */}
+        <div className="auth-right">
+          <div className="auth-right-inner">
+            <div className="auth-right-header">
+              <Title level={2} className="auth-right-title">注册</Title>
+              <Text className="auth-right-switch">
+                已有账号？<Link to="/login">去登录</Link>
+              </Text>
+            </div>
+
+            <Form<RegisterFormValues>
+              form={form}
+              name="register"
+              layout="vertical"
+              onFinish={onFinish}
+              autoComplete="off"
+              size="large"
+              className="auth-right-form"
+            >
+              <div className="auth-field-group">
+                <Form.Item
+                  name="username"
+                  rules={[
+                    { required: true, message: '请输入用户名' },
+                    { min: 3, message: '用户名至少 3 个字符' },
+                  ]}
+                >
+                  <Input
+                    prefix={<UserOutlined />}
+                    placeholder="用户名"
+                    className="auth-field"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="email"
+                  rules={[
+                    { required: true, message: '请输入邮箱' },
+                    { type: 'email', message: '邮箱格式不正确' },
+                  ]}
+                >
+                  <Input
+                    prefix={<MailOutlined />}
+                    placeholder="邮箱"
+                    className="auth-field"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="password"
+                  rules={[
+                    { required: true, message: '请输入密码' },
+                    { min: 6, message: '密码至少 6 位' },
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="密码"
+                    className="auth-field"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="confirmPassword"
+                  dependencies={['password']}
+                  rules={[
+                    { required: true, message: '请确认密码' },
+                    ({ getFieldValue }) => ({
+                      validator(_, value: string) {
+                        if (!value || getFieldValue('password') === value) {
+                          return Promise.resolve()
+                        }
+                        return Promise.reject(new Error('两次密码不一致'))
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="确认密码"
+                    className="auth-field"
+                  />
+                </Form.Item>
+              </div>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  loading={loading}
+                  className="auth-submit"
+                >
+                  注册
+                </Button>
+              </Form.Item>
+            </Form>
+
+            <Divider className="auth-divider">
+              <Text type="secondary" style={{ fontSize: 12 }}>其他方式注册</Text>
+            </Divider>
+
+            <div className="auth-oauth">
+              <Button shape="circle" size="large" icon={<WechatOutlined />} className="auth-oauth-btn" disabled />
+              <Button shape="circle" size="large" icon={<GithubOutlined />} className="auth-oauth-btn" disabled />
+              <Button shape="circle" size="large" icon={<GoogleOutlined />} className="auth-oauth-btn" disabled />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

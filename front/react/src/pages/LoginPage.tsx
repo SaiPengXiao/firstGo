@@ -1,5 +1,5 @@
-import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Card, Form, Input, Typography, message } from 'antd'
+import { LockOutlined, UserOutlined, ThunderboltOutlined, GithubOutlined, GoogleOutlined, WechatOutlined } from '@ant-design/icons'
+import { Button, Divider, Form, Input, Typography, message } from 'antd'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { loginSuccess } from '../store/authSlice'
@@ -7,7 +7,7 @@ import { useAppDispatch } from '../store/hooks'
 import type { LoginFormValues } from '../types/auth'
 import { loginApi } from '../services/authService'
 
-const { Title, Text } = Typography
+const { Title, Text, Paragraph } = Typography
 
 interface LocationState {
   from?: { pathname: string }
@@ -18,8 +18,7 @@ export default function LoginPage() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const location = useLocation()
-  const from =
-    (location.state as LocationState | null)?.from?.pathname ?? '/home'
+  const from = (location.state as LocationState | null)?.from?.pathname ?? '/home'
 
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true)
@@ -38,39 +37,106 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <Card className="auth-card" bordered={false}>
-        <Title level={3} style={{ textAlign: 'center', marginBottom: 24 }}>
-          登录
-        </Title>
-        <Form<LoginFormValues>
-          name="login"
-          layout="vertical"
-          onFinish={onFinish}
-          autoComplete="off"
-          size="large"
-        >
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: '请输入用户名' }]}
-          >
-            <Input prefix={<UserOutlined />} placeholder="用户名" />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: '请输入密码' }]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="密码" />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block loading={loading}>
-              登录
-            </Button>
-          </Form.Item>
-        </Form>
-        <Text type="secondary">
-          还没有账号？<Link to="/register">去注册</Link>
-        </Text>
-      </Card>
+      <div className="auth-container">
+        {/* Left Panel */}
+        <div className="auth-left">
+          <div className="auth-left-orb auth-left-orb-1" />
+          <div className="auth-left-orb auth-left-orb-2" />
+          <div className="auth-left-orb auth-left-orb-3" />
+
+          <div className="auth-left-ring" />
+
+          <div className="auth-left-inner">
+            <div className="auth-left-logo">
+              <div className="auth-left-logo-icon">
+                <ThunderboltOutlined />
+              </div>
+              <span className="auth-left-logo-text">DevHub</span>
+            </div>
+
+            <div className="auth-left-quote">
+              <Title level={1} className="auth-left-title">
+                欢迎<br />回来
+              </Title>
+              <Paragraph className="auth-left-desc">
+                探索前沿技术思考，与同行共建未来。
+              </Paragraph>
+            </div>
+
+            <div className="auth-left-pills">
+              <span className="auth-left-pill">前沿思考</span>
+              <span className="auth-left-pill">开放协作</span>
+              <span className="auth-left-pill">实战沉淀</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel */}
+        <div className="auth-right">
+          <div className="auth-right-inner">
+            <div className="auth-right-header">
+              <Title level={2} className="auth-right-title">登录</Title>
+              <Text className="auth-right-switch">
+                还没有账号？<Link to="/register">立即注册</Link>
+              </Text>
+            </div>
+
+            <Form<LoginFormValues>
+              name="login"
+              layout="vertical"
+              onFinish={onFinish}
+              autoComplete="off"
+              size="large"
+              className="auth-right-form"
+            >
+              <div className="auth-field-group">
+                <Form.Item
+                  name="username"
+                  rules={[{ required: true, message: '请输入用户名' }]}
+                >
+                  <Input
+                    prefix={<UserOutlined />}
+                    placeholder="用户名"
+                    className="auth-field"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="password"
+                  rules={[{ required: true, message: '请输入密码' }]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="密码"
+                    className="auth-field"
+                  />
+                </Form.Item>
+              </div>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  loading={loading}
+                  className="auth-submit"
+                >
+                  登录
+                </Button>
+              </Form.Item>
+            </Form>
+
+            <Divider className="auth-divider">
+              <Text type="secondary" style={{ fontSize: 12 }}>其他方式登录</Text>
+            </Divider>
+
+            <div className="auth-oauth">
+              <Button shape="circle" size="large" icon={<WechatOutlined />} className="auth-oauth-btn" disabled />
+              <Button shape="circle" size="large" icon={<GithubOutlined />} className="auth-oauth-btn" disabled />
+              <Button shape="circle" size="large" icon={<GoogleOutlined />} className="auth-oauth-btn" disabled />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
