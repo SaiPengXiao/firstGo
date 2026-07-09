@@ -5,6 +5,7 @@ import {
   RestOutlined,
   SettingOutlined,
   ShoppingCartOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons'
 import {
   Alert,
@@ -30,6 +31,7 @@ import {
   loadMenu,
   setOrderNote,
 } from '../store/menuSlice'
+import { createOrderApi } from '../services/orderService'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 
 const { Header, Content } = Layout
@@ -48,6 +50,7 @@ export default function MenuOrderPage() {
   const orderNote = useAppSelector((s) => s.menu.orderNote)
   const loading = useAppSelector((s) => s.menu.loading)
   const error = useAppSelector((s) => s.menu.error)
+  const isAdmin = useAppSelector((s) => (s.auth.user?.roles ?? []).includes('admin'))
   const [categoryId, setCategoryId] = useState<string>('全部')
   const [cartOpen, setCartOpen] = useState(false)
 
@@ -102,17 +105,25 @@ export default function MenuOrderPage() {
 
   const qtyOf = (id: string) => cart.find((l) => l.menuItemId === id)?.quantity ?? 0
 
-  const submitOrder = () => {
+  const submitOrder = async () => {
     if (cartLines.length === 0) {
       message.warning('请先选择菜品')
       return
     }
-    message.success({
-      content: `已提交订单（本地模拟）共 ¥${total.toFixed(2)}，共 ${cartCount(cartLines)} 份`,
-      duration: 4,
-    })
-    dispatch(clearCart())
-    setCartOpen(false)
+    try {
+      const order = await createOrderApi({
+        items: cartLines.map((l) => ({ menuItemId: l.menuItemId, quantity: l.quantity })),
+        note: orderNote || undefined,
+      })
+      message.success({
+        content: `下单成功：¥${order.totalAmount.toFixed(2)}，共 ${cartCount(cartLines)} 份`,
+        duration: 4,
+      })
+      dispatch(clearCart())
+      setCartOpen(false)
+    } catch (e) {
+      message.error(e instanceof Error ? e.message : '下单失败')
+    }
   }
 
   return (
@@ -132,13 +143,24 @@ export default function MenuOrderPage() {
           <RestOutlined /> 今日点菜
         </Title>
         <div className="menu-header-actions">
-          <Button
-            type="text"
-            icon={<SettingOutlined />}
-            onClick={() => navigate('/menu/manage')}
-          >
-            配置菜单
-          </Button>
+          {isAdmin && (
+            <Button
+              type="text"
+              icon={<SettingOutlined />}
+              onClick={() => navigate('/menu/manage')}
+            >
+              配置菜单
+            </Button>
+          )}
+          {isAdmin && (
+            <Button
+              type="text"
+              icon={<UnorderedListOutlined />}
+              onClick={() => navigate('/orders')}
+            >
+              订单
+            </Button>
+          )}
           <Badge count={count} size="small" offset={[-2, 2]}>
             <Button
               type="primary"
@@ -164,7 +186,7 @@ export default function MenuOrderPage() {
               点菜台
             </Title>
             <Text className="section-banner-desc">
-              共 {availableItems.length} 道在售 · 菜单来自后端 GET /api/menu
+              共 {availableItems.length} 道在售
             </Text>
           </div>
         </div>
@@ -202,9 +224,11 @@ export default function MenuOrderPage() {
 
             {filtered.length === 0 ? (
               <Empty description="该分类暂无菜品，去配置菜单添加吧">
-                <Button type="primary" onClick={() => navigate('/menu/manage')}>
-                  去配置
-                </Button>
+                {isAdmin && (
+                  <Button type="primary" onClick={() => navigate('/menu/manage')}>
+                    去配置
+                  </Button>
+                )}
               </Empty>
             ) : (
               <div className="menu-dish-grid">
@@ -287,7 +311,7 @@ export default function MenuOrderPage() {
                 ¥{total.toFixed(2)}
               </Title>
             </div>
-            <Button type="primary" block size="large" onClick={submitOrder}>
+            <Button type="primary" block size="large" onClick={() => void submitOrder()}>
               提交订单
             </Button>
           </div>

@@ -12,6 +12,7 @@ const PostDetailPage = lazy(() => import('../pages/PostDetailPage'))
 const PostEditorPage = lazy(() => import('../pages/PostEditorPage'))
 const MenuOrderPage = lazy(() => import('../pages/MenuOrderPage'))
 const MenuManagePage = lazy(() => import('../pages/MenuManagePage'))
+const OrderListPage = lazy(() => import('../pages/OrderListPage'))
 
 function RouteFallback() {
   return (
@@ -93,8 +94,16 @@ export default function AppRouter() {
           <Route
             path="/menu/manage"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={['admin']}>
                 <MenuManagePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <OrderListPage />
               </ProtectedRoute>
             }
           />
