@@ -75,7 +75,7 @@ export default function OrderListPage() {
       key: 'username',
       width: 120,
       render: (username: string) => (
-        <span style={{ fontWeight: 500, color: '#1a1a2e' }}>{username}</span>
+        <span style={{ fontWeight: 500, color: 'var(--color-text)' }}>{username}</span>
       ),
     },
     {
@@ -130,7 +130,7 @@ export default function OrderListPage() {
           style={{
             fontWeight: 700,
             fontSize: 15,
-            color: '#d46b08',
+            color: 'var(--color-primary)',
           }}
         >
           ¥{Number(v).toFixed(2)}
@@ -169,12 +169,12 @@ export default function OrderListPage() {
             type="text"
             icon={<LeftOutlined />}
             onClick={() => navigate('/menu')}
-            style={{ color: '#666' }}
+            className="page-back-btn"
           >
             返回
           </Button>
         </div>
-        <Title level={4} style={{ margin: 0, color: '#1a1a2e' }}>
+        <Title level={4} className="page-header-title">
           <UnorderedListOutlined /> 订单列表
         </Title>
         <div className="menu-header-actions">
@@ -183,7 +183,7 @@ export default function OrderListPage() {
             icon={<ReloadOutlined />}
             onClick={() => void load()}
             loading={loading}
-            style={{ color: '#666' }}
+            className="page-back-btn"
           >
             刷新
           </Button>
@@ -219,8 +219,8 @@ export default function OrderListPage() {
                 <Statistic
                   title="今日订单"
                   value={stats.totalOrders}
-                  prefix={<ShoppingOutlined style={{ color: '#d46b08' }} />}
-                  valueStyle={{ color: '#1a1a2e', fontWeight: 700 }}
+                  prefix={<ShoppingOutlined style={{ color: 'var(--color-stat-orders)' }} />}
+                  valueStyle={{ color: 'var(--color-text)', fontWeight: 700 }}
                 />
               </Card>
             </Col>
@@ -229,9 +229,9 @@ export default function OrderListPage() {
                 <Statistic
                   title="订单总额"
                   value={stats.totalAmount}
-                  prefix={<span style={{ color: '#d46b08' }}>¥</span>}
+                  prefix={<span style={{ color: 'var(--color-stat-revenue)' }}>¥</span>}
                   precision={2}
-                  valueStyle={{ color: '#d46b08', fontWeight: 700 }}
+                  valueStyle={{ color: 'var(--color-stat-revenue)', fontWeight: 700 }}
                 />
               </Card>
             </Col>
@@ -240,8 +240,8 @@ export default function OrderListPage() {
                 <Statistic
                   title="总份数"
                   value={stats.totalItems}
-                  prefix={<ShoppingOutlined style={{ color: '#52c41a' }} />}
-                  valueStyle={{ color: '#52c41a', fontWeight: 700 }}
+                  prefix={<ShoppingOutlined style={{ color: 'var(--color-stat-users)' }} />}
+                  valueStyle={{ color: 'var(--color-stat-users)', fontWeight: 700 }}
                 />
               </Card>
             </Col>

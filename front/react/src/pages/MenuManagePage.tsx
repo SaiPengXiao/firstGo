@@ -100,7 +100,7 @@ export default function MenuManagePage() {
       dataIndex: 'name',
       key: 'name',
       render: (name: string) => (
-        <span style={{ fontWeight: 600, fontSize: 15, color: '#1a1a2e' }}>{name}</span>
+        <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--color-text)' }}>{name}</span>
       ),
     },
     {
@@ -162,7 +162,7 @@ export default function MenuManagePage() {
             flexShrink: 0,
           }} />
           <div>
-            <div style={{ fontWeight: 600, fontSize: 15, color: '#1a1a2e', marginBottom: 4 }}>
+            <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--color-text)', marginBottom: 4 }}>
               {record.name}
             </div>
             <div style={{ fontSize: 13, color: '#888', maxWidth: 200 }} className="ellipsis">
@@ -193,7 +193,7 @@ export default function MenuManagePage() {
       width: 100,
       align: 'right',
       render: (price: number) => (
-        <span style={{ fontWeight: 700, fontSize: 16, color: '#d46b08' }}>
+        <span style={{ fontWeight: 700, fontSize: 16, color: 'var(--color-primary)' }}>
           ¥{price.toFixed(2)}
         </span>
       ),
@@ -341,12 +341,12 @@ export default function MenuManagePage() {
             type="text"
             icon={<LeftOutlined />}
             onClick={() => navigate('/menu')}
-            style={{ color: '#666' }}
+            className="page-back-btn"
           >
             返回
           </Button>
         </div>
-        <Title level={4} style={{ margin: 0, color: '#1a1a2e' }}>
+        <Title level={4} className="page-header-title">
           <SettingOutlined /> 菜单配置
         </Title>
         <div className="menu-header-actions" />
@@ -354,13 +354,7 @@ export default function MenuManagePage() {
 
       <Content className="home-content" style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* Banner */}
-        <section
-          className="section-banner"
-          style={{
-            marginBottom: 24,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          }}
-        >
+        <section className="section-banner" style={{ marginBottom: 24 }}>
           <div className="section-banner-ring" />
           <div className="section-banner-ring section-banner-ring-sm" />
           <div className="section-banner-body">

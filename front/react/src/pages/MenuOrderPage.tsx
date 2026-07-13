@@ -134,12 +134,12 @@ export default function MenuOrderPage() {
             type="text"
             icon={<LeftOutlined />}
             onClick={() => navigate('/home')}
-            style={{ color: '#666' }}
+            className="page-back-btn"
           >
             返回
           </Button>
         </div>
-        <Title level={4} style={{ margin: 0, color: '#1a1a2e' }}>
+        <Title level={4} className="page-header-title">
           <RestOutlined /> 今日点菜
         </Title>
         <div className="menu-header-actions">
