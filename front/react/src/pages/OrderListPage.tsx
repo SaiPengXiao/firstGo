@@ -287,19 +287,6 @@ export default function OrderListPage() {
                 style: { padding: '16px 24px', margin: 0 },
               }}
               rowClassName="order-table-row"
-              style={{
-                '.ant-table-thead > tr > th': {
-                  background: '#fafafa',
-                  fontWeight: 600,
-                  color: '#1a1a2e',
-                  borderBottom: '1px solid #f0f0f0',
-                  padding: '16px 24px',
-                },
-                '.ant-table-tbody > tr > td': {
-                  padding: '16px 24px',
-                  borderBottom: '1px solid #f5f5f5',
-                },
-              }}
             />
           )}
         </Card>

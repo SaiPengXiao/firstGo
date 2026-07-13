@@ -35,7 +35,7 @@ import { logout } from '../store/authSlice'
 import { clearCart } from '../store/menuSlice'
 
 const { Header, Content } = Layout
-const { Title, Text, Paragraph } = Typography
+const { Title,Paragraph } = Typography
 
 // 模拟今日推荐菜品数据
 const mockRecommendedDishes = [
