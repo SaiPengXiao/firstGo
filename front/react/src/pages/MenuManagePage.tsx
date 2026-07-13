@@ -1,30 +1,47 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
   LeftOutlined,
   PlusOutlined,
-  RestOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  DragOutlined,
+  SettingOutlined,
+  AppstoreOutlined,
+  CoffeeOutlined,
+  SaveOutlined,
+  CloseOutlined,
+  PictureOutlined,
+  CheckCircleOutlined,
+  StopOutlined,
 } from '@ant-design/icons'
 import {
-  Alert,
   Button,
+  Card,
+  Col,
+  Dropdown,
+  Empty,
   Form,
+  Image,
   Input,
   InputNumber,
   Layout,
+  Menu,
   Modal,
   Popconfirm,
+  Row,
   Select,
-  Spin,
+  Space,
   Switch,
   Table,
+  Tabs,
   Tag,
   Typography,
   message,
 } from 'antd'
-import { useEffect, useMemo, useState } from 'react'
+import type { FormInstance } from 'antd/es/form'
+import type { ColumnsType } from 'antd/es/table'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { MenuCategoryRow, MenuItem } from '../types/menu'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
 import {
   createCategory,
   createMenuItem,
@@ -34,186 +51,294 @@ import {
   updateCategory,
   updateMenuItem,
 } from '../store/menuSlice'
-import { useAppDispatch, useAppSelector } from '../store/hooks'
+import type { MenuCategoryRow, MenuItem } from '../types/menu'
 
 const { Header, Content } = Layout
 const { Title, Text } = Typography
+const { TabPane } = Tabs
+const { Option } = Select
+const { TextArea } = Input
 
-type ItemFormValues = {
-  categoryId: string
-  name: string
-  price: number
-  description?: string
-  imageUrl?: string
-  available: boolean
-}
-
-type CategoryFormValues = {
-  name: string
-  sortOrder?: number
-}
+// 模拟菜品图片
+const mockFoodImages = [
+  'https://images.unsplash.com/photo-1546069901-ba9599a32b7a2?w=200',
+  'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=200',
+  'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200',
+  'https://images.unsplash.com/photo-1555126634-323283e090fa?w=200',
+  'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200',
+  'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=200',
+]
 
 export default function MenuManagePage() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const categories = useAppSelector((s) => s.menu.categories)
-  const items = useAppSelector((s) => s.menu.items)
-  const loading = useAppSelector((s) => s.menu.loading)
-  const saving = useAppSelector((s) => s.menu.saving)
-  const error = useAppSelector((s) => s.menu.error)
+  const { categories, items, loading, saving } = useAppSelector((state) => state.menu)
+  
+  const [activeTab, setActiveTab] = useState('dishes')
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false)
+  const [dishModalVisible, setDishModalVisible] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<MenuCategoryRow | null>(null)
+  const [editingDish, setEditingDish] = useState<MenuItem | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
-  const [itemModalOpen, setItemModalOpen] = useState(false)
-  const [catModalOpen, setCatModalOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
-  const [editingCat, setEditingCat] = useState<MenuCategoryRow | null>(null)
-  const [itemForm] = Form.useForm<ItemFormValues>()
-  const [catForm] = Form.useForm<CategoryFormValues>()
+  const categoryFormRef = useRef<FormInstance>(null)
+  const dishFormRef = useRef<FormInstance>(null)
 
   useEffect(() => {
     void dispatch(loadMenu(true))
   }, [dispatch])
 
-  const categoryNameById = useMemo(() => {
-    const m = new Map<string, string>()
-    categories.forEach((c) => m.set(c.id, c.name))
-    return m
-  }, [categories])
+  // 分类列定义
+  const categoryColumns: ColumnsType<MenuCategoryRow> = [
+    {
+      title: '排序',
+      dataIndex: 'sortOrder',
+      key: 'sortOrder',
+      width: 80,
+      render: (sortOrder: number) => (
+        <Tag color="blue" style={{ borderRadius: 6 }}>{sortOrder}</Tag>
+      ),
+    },
+    {
+      title: '分类名称',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => (
+        <span style={{ fontWeight: 600, fontSize: 15, color: '#1a1a2e' }}>{name}</span>
+      ),
+    },
+    {
+      title: '菜品数量',
+      key: 'count',
+      width: 120,
+      render: (_, record) => {
+        const count = items.filter(item => item.categoryId === record.id).length
+        return (
+          <Tag color="default" style={{ borderRadius: 6 }}>
+            {count} 道菜
+          </Tag>
+        )
+      },
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 150,
+      align: 'center',
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => handleEditCategory(record)}
+          >
+            编辑
+          </Button>
+          <Popconfirm
+            title="删除分类"
+            description={`确定要删除"${record.name}"吗？该分类下的菜品将变为未分类。`}
+            onConfirm={() => handleDeleteCategory(record.id)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button type="text" danger icon={<DeleteOutlined />}>
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ]
 
-  const sortedCategories = useMemo(
-    () => [...categories].sort((a, b) => a.sortOrder - b.sortOrder),
-    [categories],
-  )
+  // 菜品列定义
+  const dishColumns: ColumnsType<MenuItem> = [
+    {
+      title: '菜品',
+      key: 'dish',
+      render: (_, record) => (
+        <Space size={12}>
+          <div style={{
+            width: 64,
+            height: 64,
+            borderRadius: 12,
+            background: `url(${record.imageUrl || mockFoodImages[record.name.length % mockFoodImages.length]}) center/cover`,
+            backgroundColor: '#f5f5f5',
+            flexShrink: 0,
+          }} />
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 15, color: '#1a1a2e', marginBottom: 4 }}>
+              {record.name}
+            </div>
+            <div style={{ fontSize: 13, color: '#888', maxWidth: 200 }} className="ellipsis">
+              {record.description || '暂无描述'}
+            </div>
+          </div>
+        </Space>
+      ),
+    },
+    {
+      title: '分类',
+      dataIndex: 'categoryId',
+      key: 'categoryId',
+      width: 120,
+      render: (categoryId: string) => {
+        const category = categories.find(c => c.id === categoryId)
+        return category ? (
+          <Tag color="orange" style={{ borderRadius: 6 }}>{category.name}</Tag>
+        ) : (
+          <Tag style={{ borderRadius: 6 }}>未分类</Tag>
+        )
+      },
+    },
+    {
+      title: '价格',
+      dataIndex: 'price',
+      key: 'price',
+      width: 100,
+      align: 'right',
+      render: (price: number) => (
+        <span style={{ fontWeight: 700, fontSize: 16, color: '#d46b08' }}>
+          ¥{price.toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      title: '状态',
+      dataIndex: 'available',
+      key: 'available',
+      width: 100,
+      align: 'center',
+      render: (available: boolean) => (
+        <Tag 
+          color={available ? 'success' : 'default'}
+          style={{ borderRadius: 6, padding: '2px 10px' }}
+        >
+          {available ? <><CheckCircleOutlined /> 在售</> : <><StopOutlined /> 下架</>}
+        </Tag>
+      ),
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 150,
+      align: 'center',
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => handleEditDish(record)}
+          >
+            编辑
+          </Button>
+          <Popconfirm
+            title="删除菜品"
+            description={`确定要删除"${record.name}"吗？`}
+            onConfirm={() => handleDeleteDish(record.id)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button type="text" danger icon={<DeleteOutlined />}>
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ]
 
-  const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
-      const ca = categoryNameById.get(a.categoryId) ?? ''
-      const cb = categoryNameById.get(b.categoryId) ?? ''
-      return ca.localeCompare(cb, 'zh-CN')
-    })
-  }, [items, categoryNameById])
+  // 过滤菜品
+  const filteredDishes = useMemo(() => {
+    if (selectedCategory === 'all') return items
+    return items.filter(item => item.categoryId === selectedCategory)
+  }, [items, selectedCategory])
 
-  const openCreateItem = () => {
-    setEditingItem(null)
-    const defaultCat = sortedCategories[0]?.id ?? ''
-    itemForm.setFieldsValue({
-      categoryId: defaultCat,
-      name: '',
-      price: 0,
-      description: '',
-      imageUrl: '',
-      available: true,
-    })
-    setItemModalOpen(true)
+  // 分类操作
+  const handleAddCategory = () => {
+    setEditingCategory(null)
+    categoryFormRef.current?.resetFields()
+    setCategoryModalVisible(true)
   }
 
-  const openEditItem = (record: MenuItem) => {
-    setEditingItem(record)
-    itemForm.setFieldsValue({
-      categoryId: record.categoryId,
-      name: record.name,
-      price: record.price,
-      description: record.description ?? '',
-      imageUrl: record.imageUrl ?? '',
-      available: record.available,
-    })
-    setItemModalOpen(true)
+  const handleEditCategory = (category: MenuCategoryRow) => {
+    setEditingCategory(category)
+    categoryFormRef.current?.setFieldsValue(category)
+    setCategoryModalVisible(true)
   }
 
-  const handleItemSubmit = async () => {
-    const values = await itemForm.validateFields()
+  const handleDeleteCategory = async (id: string) => {
+    await dispatch(deleteCategory(id))
+    message.success('分类已删除')
+  }
+
+  const handleSaveCategory = async (values: { name: string; sortOrder?: number }) => {
     try {
-      if (editingItem) {
-        await dispatch(
-          updateMenuItem({
-            id: editingItem.id,
-            body: {
-              categoryId: values.categoryId,
-              name: values.name,
-              price: values.price,
-              description: values.description,
-              imageUrl: values.imageUrl,
-              isAvailable: values.available,
-            },
-          }),
-        ).unwrap()
-        message.success('已更新菜品')
+      if (editingCategory) {
+        await dispatch(updateCategory({ id: editingCategory.id, body: values }))
+        message.success('分类已更新')
       } else {
-        await dispatch(
-          createMenuItem({
-            categoryId: values.categoryId,
-            name: values.name,
-            price: values.price,
-            description: values.description,
-            imageUrl: values.imageUrl,
-            isAvailable: values.available,
-          }),
-        ).unwrap()
-        message.success('已添加菜品')
+        await dispatch(createCategory(values))
+        message.success('分类已创建')
       }
-      setItemModalOpen(false)
-    } catch (e) {
-      message.error(e instanceof Error ? e.message : '保存失败')
+      setCategoryModalVisible(false)
+    } catch {
+      // error handled in slice
     }
   }
 
-  const openCreateCat = () => {
-    setEditingCat(null)
-    catForm.setFieldsValue({ name: '', sortOrder: sortedCategories.length })
-    setCatModalOpen(true)
+  // 菜品操作
+  const handleAddDish = () => {
+    setEditingDish(null)
+    dishFormRef.current?.resetFields()
+    dishFormRef.current?.setFieldsValue({ available: true, price: 0 })
+    setDishModalVisible(true)
   }
 
-  const openEditCat = (record: MenuCategoryRow) => {
-    setEditingCat(record)
-    catForm.setFieldsValue({ name: record.name, sortOrder: record.sortOrder })
-    setCatModalOpen(true)
+  const handleEditDish = (dish: MenuItem) => {
+    setEditingDish(dish)
+    dishFormRef.current?.setFieldsValue({
+      ...dish,
+      price: dish.price,
+    })
+    setDishModalVisible(true)
   }
 
-  const handleCatSubmit = async () => {
-    const values = await catForm.validateFields()
+  const handleDeleteDish = async (id: string) => {
+    await dispatch(deleteMenuItem(id))
+    message.success('菜品已删除')
+  }
+
+  const handleSaveDish = async (values: {
+    name: string
+    categoryId: string
+    price: number
+    description?: string
+    imageUrl?: string
+    available: boolean
+  }) => {
     try {
-      if (editingCat) {
-        await dispatch(
-          updateCategory({
-            id: editingCat.id,
-            body: { name: values.name, sortOrder: values.sortOrder },
-          }),
-        ).unwrap()
-        message.success('已更新分类')
+      if (editingDish) {
+        await dispatch(updateMenuItem({ id: editingDish.id, body: values }))
+        message.success('菜品已更新')
       } else {
-        await dispatch(
-          createCategory({
-            name: values.name,
-            sortOrder: values.sortOrder,
-          }),
-        ).unwrap()
-        message.success('已添加分类')
+        await dispatch(createMenuItem(values))
+        message.success('菜品已创建')
       }
-      setCatModalOpen(false)
-    } catch (e) {
-      message.error(e instanceof Error ? e.message : '保存失败')
+      setDishModalVisible(false)
+    } catch {
+      // error handled in slice
     }
   }
 
-  const handleDeleteCat = async (id: string) => {
-    try {
-      await dispatch(deleteCategory(id)).unwrap()
-      message.success('已删除分类')
-    } catch (e) {
-      message.error(e instanceof Error ? e.message : '删除失败')
-    }
-  }
-
-  const handleDeleteItem = async (id: string) => {
-    try {
-      await dispatch(deleteMenuItem(id)).unwrap()
-      message.success('已删除')
-    } catch (e) {
-      message.error(e instanceof Error ? e.message : '删除失败')
-    }
-  }
+  // 分类菜单
+  const categoryMenuItems = [
+    { key: 'all', label: '全部菜品', icon: <AppstoreOutlined /> },
+    ...categories.map(c => ({ key: c.id, label: c.name, icon: <CoffeeOutlined /> })),
+  ]
 
   return (
     <Layout className="home-layout">
+      {/* Header */}
       <Header className="home-header">
         <div className="home-header-brand">
           <Button
@@ -222,202 +347,317 @@ export default function MenuManagePage() {
             onClick={() => navigate('/menu')}
             style={{ color: '#666' }}
           >
-            返回点菜
+            返回
           </Button>
         </div>
         <Title level={4} style={{ margin: 0, color: '#1a1a2e' }}>
-          <RestOutlined /> 菜单配置
+          <SettingOutlined /> 菜单配置
         </Title>
-        <div style={{ width: 80 }} />
+        <div className="menu-header-actions" />
       </Header>
 
-      <Content className="home-content menu-page-content">
-        <div className="menu-manage-toolbar">
-          <div>
-            <Title level={3} className="menu-page-title">
-              管理菜单
+      <Content className="home-content" style={{ maxWidth: 1200, margin: '0 auto' }}>
+        {/* Banner */}
+        <section
+          className="section-banner"
+          style={{
+            marginBottom: 24,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          }}
+        >
+          <div className="section-banner-ring" />
+          <div className="section-banner-ring section-banner-ring-sm" />
+          <div className="section-banner-body">
+            <div className="section-banner-icon">
+              <SettingOutlined />
+            </div>
+            <Title level={2} className="section-banner-title">
+              菜单管理中心
             </Title>
-            <Text type="secondary">需登录，对接后端编辑接口（Bearer Token）</Text>
+            <Text className="section-banner-desc">
+              配置菜品分类，管理菜单内容
+            </Text>
           </div>
-          <div className="menu-manage-actions">
-            <Button onClick={openCreateCat} disabled={saving}>
-              新增分类
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateItem} disabled={saving || sortedCategories.length === 0}>
-              新增菜品
-            </Button>
-          </div>
-        </div>
+        </section>
 
-        {error && (
-          <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />
-        )}
+        {/* Content */}
+        <Card
+          style={{
+            borderRadius: 20,
+            border: '1px solid rgba(0,0,0,0.04)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+          }}
+          bodyStyle={{ padding: 0 }}
+        >
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            style={{ padding: '0 24px' }}
+            tabBarExtraContent={
+              activeTab === 'categories' ? (
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddCategory}
+                  loading={saving}
+                  style={{ borderRadius: 8 }}
+                >
+                  新增分类
+                </Button>
+              ) : (
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddDish}
+                  loading={saving}
+                  style={{ borderRadius: 8 }}
+                >
+                  新增菜品
+                </Button>
+              )
+            }
+          >
+            {/* 菜品管理 Tab */}
+            <TabPane
+              tab={
+                <span>
+                  <CoffeeOutlined /> 菜品管理
+                </span>
+              }
+              key="dishes"
+            >
+              <Row gutter={0} style={{ minHeight: 500 }}>
+                {/* 左侧分类筛选 */}
+                <Col xs={0} sm={6} lg={5}>
+                  <div style={{ borderRight: '1px solid #f0f0f0', height: '100%' }}>
+                    <div style={{ padding: '16px 0', borderBottom: '1px solid #f0f0f0' }}>
+                      <Text strong style={{ padding: '0 16px' }}>分类筛选</Text>
+                    </div>
+                    <Menu
+                      mode="inline"
+                      selectedKeys={[selectedCategory]}
+                      onClick={({ key }) => setSelectedCategory(key)}
+                      style={{ border: 'none' }}
+                      items={categoryMenuItems}
+                    />
+                  </div>
+                </Col>
 
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 48 }}>
-            <Spin size="large" tip="加载菜单…" />
-          </div>
-        ) : (
-          <>
-            <Title level={5} style={{ marginBottom: 12 }}>
-              分类
-            </Title>
-            <Table
-              rowKey="id"
-              size="small"
-              dataSource={sortedCategories}
-              pagination={false}
-              style={{ marginBottom: 32 }}
-              columns={[
-                { title: '名称', dataIndex: 'name' },
-                { title: '排序', dataIndex: 'sortOrder', width: 80 },
-                {
-                  title: '操作',
-                  key: 'actions',
-                  width: 120,
-                  render: (_: unknown, record: MenuCategoryRow) => (
-                    <>
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<EditOutlined />}
-                        onClick={() => openEditCat(record)}
+                {/* 右侧菜品列表 */}
+                <Col xs={24} sm={18} lg={19}>
+                  <div style={{ padding: 24 }}>
+                    <Table
+                      rowKey="id"
+                      columns={dishColumns}
+                      dataSource={filteredDishes}
+                      loading={loading}
+                      pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showTotal: (total) => `共 ${total} 道菜品`,
+                      }}
+                      locale={{
+                        emptyText: (
+                          <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={
+                            selectedCategory === 'all' 
+                              ? '暂无菜品，点击上方按钮添加' 
+                              : '该分类下暂无菜品'
+                          }
+                          />
+                        ),
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+            </TabPane>
+
+            {/* 分类管理 Tab */}
+            <TabPane
+              tab={
+                <span>
+                  <AppstoreOutlined /> 分类管理
+                </span>
+              }
+              key="categories"
+            >
+              <div style={{ padding: 24 }}>
+                <Table
+                  rowKey="id"
+                  columns={categoryColumns}
+                  dataSource={categories}
+                  loading={loading}
+                  pagination={false}
+                  locale={{
+                    emptyText: (
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description="暂无分类，点击上方按钮添加"
                       />
-                      <Popconfirm
-                        title="删除该分类？"
-                        description="分类下若有菜品可能无法删除"
-                        onConfirm={() => void handleDeleteCat(record.id)}
-                      >
-                        <Button type="text" size="small" danger icon={<DeleteOutlined />} />
-                      </Popconfirm>
-                    </>
-                  ),
-                },
-              ]}
-            />
-
-            <Title level={5} style={{ marginBottom: 12 }}>
-              菜品
-            </Title>
-            <Table
-              rowKey="id"
-              dataSource={sortedItems}
-              loading={saving}
-              pagination={{ pageSize: 10, showSizeChanger: false }}
-              columns={[
-                {
-                  title: '名称',
-                  dataIndex: 'name',
-                  render: (name: string, row: MenuItem) => (
-                    <span>
-                      {name}
-                      {!row.available && (
-                        <Tag color="default" style={{ marginLeft: 8 }}>
-                          已下架
-                        </Tag>
-                      )}
-                    </span>
-                  ),
-                },
-                {
-                  title: '分类',
-                  dataIndex: 'categoryId',
-                  width: 100,
-                  render: (id: string) => <Tag>{categoryNameById.get(id) ?? id}</Tag>,
-                },
-                {
-                  title: '价格',
-                  dataIndex: 'price',
-                  width: 100,
-                  render: (p: number) => `¥${p.toFixed(2)}`,
-                },
-                {
-                  title: '描述',
-                  dataIndex: 'description',
-                  ellipsis: true,
-                },
-                {
-                  title: '操作',
-                  key: 'actions',
-                  width: 140,
-                  render: (_: unknown, record: MenuItem) => (
-                    <>
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<EditOutlined />}
-                        onClick={() => openEditItem(record)}
-                      />
-                      <Popconfirm
-                        title="删除该菜品？"
-                        onConfirm={() => void handleDeleteItem(record.id)}
-                      >
-                        <Button type="text" size="small" danger icon={<DeleteOutlined />} />
-                      </Popconfirm>
-                    </>
-                  ),
-                },
-              ]}
-            />
-          </>
-        )}
+                    ),
+                  }}
+                />
+              </div>
+            </TabPane>
+          </Tabs>
+        </Card>
       </Content>
 
+      {/* 分类编辑/新增 Modal */}
       <Modal
-        title={editingItem ? '编辑菜品' : '新增菜品'}
-        open={itemModalOpen}
-        confirmLoading={saving}
-        onOk={() => void handleItemSubmit()}
-        onCancel={() => setItemModalOpen(false)}
-        destroyOnClose
-        okText="保存"
+        title={editingCategory ? '编辑分类' : '新增分类'}
+        open={categoryModalVisible}
+        onCancel={() => setCategoryModalVisible(false)}
+        footer={null}
+        width={480}
       >
-        <Form form={itemForm} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="categoryId" label="分类" rules={[{ required: true }]}>
-            <Select
-              options={sortedCategories.map((c) => ({ value: c.id, label: c.name }))}
-            />
-          </Form.Item>
-          <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
-            <Input placeholder="如：红烧肉" maxLength={40} />
+        <Form
+          ref={categoryFormRef}
+          layout="vertical"
+          onFinish={handleSaveCategory}
+          initialValues={{ sortOrder: categories.length + 1 }}
+          style={{ marginTop: 16 }}
+        >
+          <Form.Item
+            name="name"
+            label="分类名称"
+            rules={[{ required: true, message: '请输入分类名称' }]}
+          >
+            <Input placeholder="如：主食、饮品、小吃" size="large" />
           </Form.Item>
           <Form.Item
-            name="price"
-            label="价格（元）"
-            rules={[{ required: true, message: '请输入价格' }]}
+            name="sortOrder"
+            label="排序"
+            rules={[{ required: true, message: '请输入排序数字' }]}
           >
-            <InputNumber min={0} max={9999} precision={2} style={{ width: '100%' }} />
+            <InputNumber min={1} style={{ width: '100%' }} size="large" />
           </Form.Item>
-          <Form.Item name="description" label="描述">
-            <Input.TextArea rows={2} maxLength={120} showCount />
-          </Form.Item>
-          <Form.Item name="imageUrl" label="图片 URL">
-            <Input placeholder="可选" />
-          </Form.Item>
-          <Form.Item name="available" label="上架" valuePropName="checked">
-            <Switch checkedChildren="在售" unCheckedChildren="下架" />
+          <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={() => setCategoryModalVisible(false)} size="large">
+                取消
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={saving}
+                icon={<SaveOutlined />}
+                size="large"
+              >
+                保存
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
       </Modal>
 
+      {/* 菜品编辑/新增 Modal */}
       <Modal
-        title={editingCat ? '编辑分类' : '新增分类'}
-        open={catModalOpen}
-        confirmLoading={saving}
-        onOk={() => void handleCatSubmit()}
-        onCancel={() => setCatModalOpen(false)}
-        destroyOnClose
-        okText="保存"
+        title={editingDish ? '编辑菜品' : '新增菜品'}
+        open={dishModalVisible}
+        onCancel={() => setDishModalVisible(false)}
+        footer={null}
+        width={600}
       >
-        <Form form={catForm} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入分类名' }]}>
-            <Input maxLength={20} />
+        <Form
+          ref={dishFormRef}
+          layout="vertical"
+          onFinish={handleSaveDish}
+          initialValues={{ available: true }}
+          style={{ marginTop: 16 }}
+        >
+          <Row gutter={16}>
+            <Col span={16}>
+              <Form.Item
+                name="name"
+                label="菜品名称"
+                rules={[{ required: true, message: '请输入菜品名称' }]}
+              >
+                <Input placeholder="如：宫保鸡丁" size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="price"
+                label="价格 (¥)"
+                rules={[{ required: true, message: '请输入价格' }]}
+              >
+                <InputNumber
+                  min={0}
+                  step={0.01}
+                  precision={2}
+                  style={{ width: '100%' }}
+                  size="large"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="categoryId"
+            label="所属分类"
+            rules={[{ required: true, message: '请选择分类' }]}
+          >
+            <Select placeholder="选择分类" size="large">
+              {categories.map((c) => (
+                <Option key={c.id} value={c.id}>{c.name}</Option>
+              ))}
+            </Select>
           </Form.Item>
-          <Form.Item name="sortOrder" label="排序（越小越靠前）">
-            <InputNumber min={0} max={999} style={{ width: '100%' }} />
+
+          <Form.Item name="description" label="菜品描述">
+            <TextArea
+              rows={3}
+              placeholder="描述菜品特色、口味等"
+              maxLength={200}
+              showCount
+            />
+          </Form.Item>
+
+          <Form.Item name="imageUrl" label="图片链接">
+            <Input placeholder="https://..." size="large" prefix={<PictureOutlined />} />
+          </Form.Item>
+
+          <Form.Item
+            name="available"
+            label="售卖状态"
+            valuePropName="checked"
+          >
+            <Switch
+              checkedChildren="在售"
+              unCheckedChildren="下架"
+              style={{ width: 70 }}
+            />
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={() => setDishModalVisible(false)} size="large">
+                取消
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={saving}
+                icon={<SaveOutlined />}
+                size="large"
+              >
+                保存
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
       </Modal>
+
+      <style>{`
+        .ellipsis {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      `}</style>
     </Layout>
   )
 }

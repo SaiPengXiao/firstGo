@@ -1559,3 +1559,67 @@
     border-bottom-color: #2a2a38;
   }
 }
+
+/* ================================================
+   ORDER LIST — 订单列表
+   ================================================ */
+.order-table-row {
+  transition: all 0.25s ease;
+}
+
+.order-table-row:hover {
+  background: linear-gradient(135deg, #fff7e6, #fff2d9) !important;
+}
+
+.order-table-row:hover td {
+  background: transparent !important;
+}
+
+.order-stats-card {
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.order-stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.order-table-card {
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.order-tag {
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+  background: linear-gradient(135deg, #fff7e6, #fff2d9);
+  border: 1px solid #ffd8bf;
+  color: #d46b08;
+}
+
+@media (prefers-color-scheme: dark) {
+  .order-table-row:hover {
+    background: rgba(250, 140, 22, 0.1) !important;
+  }
+
+  .order-stats-card {
+    background: #1a1a24;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .order-table-card {
+    background: #1a1a24;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .order-tag {
+    background: rgba(250, 140, 22, 0.15);
+    border-color: rgba(250, 140, 22, 0.3);
+  }
+}

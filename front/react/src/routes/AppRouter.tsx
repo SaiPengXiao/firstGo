@@ -7,9 +7,6 @@ import ProtectedRoute from './ProtectedRoute'
 const HomePage = lazy(() => import('../pages/HomePage'))
 const LoginPage = lazy(() => import('../pages/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/RegisterPage'))
-const PostListPage = lazy(() => import('../pages/PostListPage'))
-const PostDetailPage = lazy(() => import('../pages/PostDetailPage'))
-const PostEditorPage = lazy(() => import('../pages/PostEditorPage'))
 const MenuOrderPage = lazy(() => import('../pages/MenuOrderPage'))
 const MenuManagePage = lazy(() => import('../pages/MenuManagePage'))
 const OrderListPage = lazy(() => import('../pages/OrderListPage'))
@@ -56,30 +53,6 @@ export default function AppRouter() {
             element={
               <ProtectedRoute>
                 <HomePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/section/:section"
-            element={
-              <ProtectedRoute>
-                <PostListPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/section/:section/:postId"
-            element={
-              <ProtectedRoute>
-                <PostDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/post/new"
-            element={
-              <ProtectedRoute>
-                <PostEditorPage />
               </ProtectedRoute>
             }
           />
