@@ -24,6 +24,12 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const result = await loginApi(values)
+      // 检查是否为管理员
+      const isAdmin = result.user.roles?.includes('admin')
+      if (!isAdmin) {
+        message.error('访问被拒绝：只有管理员可以登录此系统')
+        return
+      }
       dispatch(loginSuccess(result))
       message.success('登录成功')
       void navigate(from, { replace: true })

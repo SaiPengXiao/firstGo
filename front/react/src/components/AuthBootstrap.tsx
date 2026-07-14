@@ -27,6 +27,14 @@ export default function AuthBootstrap({ children }: { children: ReactNode }) {
 
         try {
           const user = await getMeApi()
+          // 检查是否为管理员
+          const isAdmin = user.roles?.includes('admin')
+          if (!isAdmin) {
+            if (!cancelled) {
+              dispatch(logout())
+            }
+            return
+          }
           if (!cancelled) {
             dispatch(setUserFromMe(user))
           }

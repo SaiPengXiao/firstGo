@@ -19,6 +19,12 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       const result = await registerApi(values)
+      // 检查是否为管理员
+      const isAdmin = result.user.roles?.includes('admin')
+      if (!isAdmin) {
+        message.error('注册失败：只有管理员账号可以访问此系统')
+        return
+      }
       dispatch(registerSuccess(result))
       message.success('注册成功')
       void navigate('/home', { replace: true })

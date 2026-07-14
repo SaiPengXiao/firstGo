@@ -55,7 +55,7 @@ export default function AppRouter() {
           <Route
             path="/home"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={['admin']}>
                 <AdminPage>
                   <HomePage />
                 </AdminPage>
