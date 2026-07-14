@@ -5,31 +5,35 @@ import { logout, setAuthReady, setUserFromMe } from '../store/authSlice'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 
 /**
- * 应用启动时：若本地有 token，请求 GET /api/auth/me 校验并同步用户信息；
- * 失败则清除登录态。在 authReady 之前显示全屏加载，避免路由误判。
+ * 应用启动鉴权：
+ * - 本地有 token：请求 GET /api/auth/me 校验，成功则恢复登录态，失败则清除并保持未登录
+ * - 本地无 token：直接标记鉴权完成，进入登录页
+ * 不会自动用默认账号登录。
  */
 export default function AuthBootstrap({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch()
-  const token = useAppSelector((s) => s.auth.token)
   const authReady = useAppSelector((s) => s.auth.authReady)
 
   useEffect(() => {
-    if (!token) {
-      dispatch(setAuthReady(true))
-      return
-    }
-
     let cancelled = false
 
     void (async () => {
+      const token = localStorage.getItem('auth_token')
+
       try {
-        const user = await getMeApi()
-        if (!cancelled) {
-          dispatch(setUserFromMe(user))
+        if (!token) {
+          return
         }
-      } catch {
-        if (!cancelled) {
-          dispatch(logout())
+
+        try {
+          const user = await getMeApi()
+          if (!cancelled) {
+            dispatch(setUserFromMe(user))
+          }
+        } catch {
+          if (!cancelled) {
+            dispatch(logout())
+          }
         }
       } finally {
         if (!cancelled) {
@@ -41,20 +45,13 @@ export default function AuthBootstrap({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [dispatch, token])
+  }, [dispatch])
 
   if (!authReady) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          background: '#fafafa',
-        }}
-      >
-        <Spin size="large" tip="正在验证登录…" />
+      <div className="app-loading-overlay" aria-busy="true" aria-live="polite">
+        <Spin size="large" />
+        <p style={{ marginTop: 12, color: 'var(--color-text-secondary, #888)' }}>正在校验登录态…</p>
       </div>
     )
   }

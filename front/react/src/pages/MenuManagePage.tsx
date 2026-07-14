@@ -1,5 +1,4 @@
 import {
-  LeftOutlined,
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
@@ -19,7 +18,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Layout,
   Menu,
   Modal,
   Popconfirm,
@@ -36,7 +34,6 @@ import {
 import type { FormInstance } from 'antd/es/form'
 import type { ColumnsType } from 'antd/es/table'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import {
   createCategory,
@@ -49,13 +46,10 @@ import {
 } from '../store/menuSlice'
 import type { MenuCategoryRow, MenuItem } from '../types/menu'
 
-const { Header, Content } = Layout
 const { Title, Text } = Typography
-const { TabPane } = Tabs
 const { Option } = Select
 const { TextArea } = Input
 
-// 模拟菜品图片
 const mockFoodImages = [
   'https://images.unsplash.com/photo-1546069901-ba9599a32b7a2?w=200',
   'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=200',
@@ -66,10 +60,9 @@ const mockFoodImages = [
 ]
 
 export default function MenuManagePage() {
-  const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { categories, items, loading, saving } = useAppSelector((state) => state.menu)
-  
+
   const [activeTab, setActiveTab] = useState('dishes')
   const [categoryModalVisible, setCategoryModalVisible] = useState(false)
   const [dishModalVisible, setDishModalVisible] = useState(false)
@@ -84,7 +77,6 @@ export default function MenuManagePage() {
     void dispatch(loadMenu(true))
   }, [dispatch])
 
-  // 分类列定义
   const categoryColumns: ColumnsType<MenuCategoryRow> = [
     {
       title: '排序',
@@ -100,7 +92,7 @@ export default function MenuManagePage() {
       dataIndex: 'name',
       key: 'name',
       render: (name: string) => (
-        <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--color-text)' }}>{name}</span>
+        <span style={{ fontWeight: 600, fontSize: 15 }}>{name}</span>
       ),
     },
     {
@@ -108,12 +100,8 @@ export default function MenuManagePage() {
       key: 'count',
       width: 120,
       render: (_, record) => {
-        const count = items.filter(item => item.categoryId === record.id).length
-        return (
-          <Tag color="default" style={{ borderRadius: 6 }}>
-            {count} 道菜
-          </Tag>
-        )
+        const count = items.filter((item) => item.categoryId === record.id).length
+        return <Tag style={{ borderRadius: 6 }}>{count} 道菜</Tag>
       },
     },
     {
@@ -123,11 +111,7 @@ export default function MenuManagePage() {
       align: 'center',
       render: (_, record) => (
         <Space>
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEditCategory(record)}
-          >
+          <Button type="text" icon={<EditOutlined />} onClick={() => handleEditCategory(record)}>
             编辑
           </Button>
           <Popconfirm
@@ -146,25 +130,37 @@ export default function MenuManagePage() {
     },
   ]
 
-  // 菜品列定义
   const dishColumns: ColumnsType<MenuItem> = [
     {
       title: '菜品',
       key: 'dish',
       render: (_, record) => (
         <Space size={12}>
-          <div style={{
-            width: 64,
-            height: 64,
-            borderRadius: 12,
-            background: `url(${record.imageUrl || mockFoodImages[record.name.length % mockFoodImages.length]}) center/cover`,
-            backgroundColor: '#f5f5f5',
-            flexShrink: 0,
-          }} />
+          <img
+            src={
+              record.imageUrl ||
+              mockFoodImages[record.name.length % mockFoodImages.length]
+            }
+            alt={record.name}
+            referrerPolicy="no-referrer"
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 12,
+              objectFit: 'cover',
+              backgroundColor: '#f5f5f5',
+              flexShrink: 0,
+              display: 'block',
+            }}
+            onError={(e) => {
+              const el = e.currentTarget
+              const fallback =
+                mockFoodImages[record.name.length % mockFoodImages.length]
+              if (el.src !== fallback) el.src = fallback
+            }}
+          />
           <div>
-            <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--color-text)', marginBottom: 4 }}>
-              {record.name}
-            </div>
+            <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>{record.name}</div>
             <div style={{ fontSize: 13, color: '#888', maxWidth: 200 }} className="ellipsis">
               {record.description || '暂无描述'}
             </div>
@@ -178,7 +174,7 @@ export default function MenuManagePage() {
       key: 'categoryId',
       width: 120,
       render: (categoryId: string) => {
-        const category = categories.find(c => c.id === categoryId)
+        const category = categories.find((c) => c.id === categoryId)
         return category ? (
           <Tag color="orange" style={{ borderRadius: 6 }}>{category.name}</Tag>
         ) : (
@@ -205,10 +201,7 @@ export default function MenuManagePage() {
       width: 100,
       align: 'center',
       render: (available: boolean) => (
-        <Tag 
-          color={available ? 'success' : 'default'}
-          style={{ borderRadius: 6, padding: '2px 10px' }}
-        >
+        <Tag color={available ? 'success' : 'default'} style={{ borderRadius: 6, padding: '2px 10px' }}>
           {available ? <><CheckCircleOutlined /> 在售</> : <><StopOutlined /> 下架</>}
         </Tag>
       ),
@@ -220,11 +213,7 @@ export default function MenuManagePage() {
       align: 'center',
       render: (_, record) => (
         <Space>
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEditDish(record)}
-          >
+          <Button type="text" icon={<EditOutlined />} onClick={() => handleEditDish(record)}>
             编辑
           </Button>
           <Popconfirm
@@ -243,13 +232,11 @@ export default function MenuManagePage() {
     },
   ]
 
-  // 过滤菜品
   const filteredDishes = useMemo(() => {
     if (selectedCategory === 'all') return items
-    return items.filter(item => item.categoryId === selectedCategory)
+    return items.filter((item) => item.categoryId === selectedCategory)
   }, [items, selectedCategory])
 
-  // 分类操作
   const handleAddCategory = () => {
     setEditingCategory(null)
     categoryFormRef.current?.resetFields()
@@ -282,7 +269,6 @@ export default function MenuManagePage() {
     }
   }
 
-  // 菜品操作
   const handleAddDish = () => {
     setEditingDish(null)
     dishFormRef.current?.resetFields()
@@ -292,10 +278,7 @@ export default function MenuManagePage() {
 
   const handleEditDish = (dish: MenuItem) => {
     setEditingDish(dish)
-    dishFormRef.current?.setFieldsValue({
-      ...dish,
-      price: dish.price,
-    })
+    dishFormRef.current?.setFieldsValue({ ...dish, price: dish.price })
     setDishModalVisible(true)
   }
 
@@ -326,176 +309,133 @@ export default function MenuManagePage() {
     }
   }
 
-  // 分类菜单
   const categoryMenuItems = [
     { key: 'all', label: '全部菜品', icon: <AppstoreOutlined /> },
-    ...categories.map(c => ({ key: c.id, label: c.name, icon: <CoffeeOutlined /> })),
+    ...categories.map((c) => ({ key: c.id, label: c.name, icon: <CoffeeOutlined /> })),
   ]
 
   return (
-    <Layout className="home-layout">
-      {/* Header */}
-      <Header className="home-header">
-        <div className="home-header-brand">
-          <Button
-            type="text"
-            icon={<LeftOutlined />}
-            onClick={() => navigate('/menu')}
-            className="page-back-btn"
-          >
-            返回
-          </Button>
+    <div className="admin-page">
+      <div className="admin-page-header">
+        <div>
+          <Title level={3} style={{ margin: 0 }}>
+            <SettingOutlined style={{ marginRight: 8 }} />
+            菜单配置
+          </Title>
+          <Text type="secondary">配置分类、菜品价格与上下架状态</Text>
         </div>
-        <Title level={4} className="page-header-title">
-          <SettingOutlined /> 菜单配置
-        </Title>
-        <div className="menu-header-actions" />
-      </Header>
+      </div>
 
-      <Content className="home-content" style={{ maxWidth: 1200, margin: '0 auto' }}>
-        {/* Banner */}
-        <section className="section-banner" style={{ marginBottom: 24 }}>
-          <div className="section-banner-ring" />
-          <div className="section-banner-ring section-banner-ring-sm" />
-          <div className="section-banner-body">
-            <div className="section-banner-icon">
-              <SettingOutlined />
-            </div>
-            <Title level={2} className="section-banner-title">
-              菜单管理中心
-            </Title>
-            <Text className="section-banner-desc">
-              配置菜品分类，管理菜单内容
-            </Text>
-          </div>
-        </section>
-
-        {/* Content */}
-        <Card
-          style={{
-            borderRadius: 20,
-            border: '1px solid rgba(0,0,0,0.04)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-          }}
-          bodyStyle={{ padding: 0 }}
-        >
-          <Tabs
-            activeKey={activeTab}
-            onChange={setActiveTab}
-            style={{ padding: '0 24px' }}
-            tabBarExtraContent={
-              activeTab === 'categories' ? (
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={handleAddCategory}
-                  loading={saving}
-                  style={{ borderRadius: 8 }}
-                >
-                  新增分类
-                </Button>
-              ) : (
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={handleAddDish}
-                  loading={saving}
-                  style={{ borderRadius: 8 }}
-                >
-                  新增菜品
-                </Button>
-              )
-            }
-          >
-            {/* 菜品管理 Tab */}
-            <TabPane
-              tab={
+      <Card className="admin-panel-card" bordered={false} styles={{ body: { padding: 0 } }}>
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          style={{ padding: '0 24px' }}
+          items={[
+            {
+              key: 'dishes',
+              label: (
                 <span>
                   <CoffeeOutlined /> 菜品管理
                 </span>
-              }
-              key="dishes"
-            >
-              <Row gutter={0} style={{ minHeight: 500 }}>
-                {/* 左侧分类筛选 */}
-                <Col xs={0} sm={6} lg={5}>
-                  <div style={{ borderRight: '1px solid #f0f0f0', height: '100%' }}>
-                    <div style={{ padding: '16px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      <Text strong style={{ padding: '0 16px' }}>分类筛选</Text>
+              ),
+              children: (
+                <Row gutter={0} style={{ minHeight: 500 }}>
+                  <Col xs={0} sm={6} lg={5}>
+                    <div style={{ borderRight: '1px solid #f0f0f0', height: '100%' }}>
+                      <div style={{ padding: '16px 0', borderBottom: '1px solid #f0f0f0' }}>
+                        <Text strong style={{ padding: '0 16px' }}>分类筛选</Text>
+                      </div>
+                      <Menu
+                        mode="inline"
+                        selectedKeys={[selectedCategory]}
+                        onClick={({ key }) => setSelectedCategory(key)}
+                        style={{ border: 'none' }}
+                        items={categoryMenuItems}
+                      />
                     </div>
-                    <Menu
-                      mode="inline"
-                      selectedKeys={[selectedCategory]}
-                      onClick={({ key }) => setSelectedCategory(key)}
-                      style={{ border: 'none' }}
-                      items={categoryMenuItems}
-                    />
-                  </div>
-                </Col>
-
-                {/* 右侧菜品列表 */}
-                <Col xs={24} sm={18} lg={19}>
-                  <div style={{ padding: 24 }}>
-                    <Table
-                      rowKey="id"
-                      columns={dishColumns}
-                      dataSource={filteredDishes}
-                      loading={loading}
-                      pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showTotal: (total) => `共 ${total} 道菜品`,
-                      }}
-                      locale={{
-                        emptyText: (
-                          <Empty
-                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                          description={
-                            selectedCategory === 'all' 
-                              ? '暂无菜品，点击上方按钮添加' 
-                              : '该分类下暂无菜品'
-                          }
-                          />
-                        ),
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </TabPane>
-
-            {/* 分类管理 Tab */}
-            <TabPane
-              tab={
+                  </Col>
+                  <Col xs={24} sm={18} lg={19}>
+                    <div style={{ padding: 24 }}>
+                      <div style={{ marginBottom: 16, textAlign: 'right' }}>
+                        <Button
+                          type="primary"
+                          icon={<PlusOutlined />}
+                          onClick={handleAddDish}
+                          loading={saving}
+                        >
+                          新增菜品
+                        </Button>
+                      </div>
+                      <Table
+                        rowKey="id"
+                        columns={dishColumns}
+                        dataSource={filteredDishes}
+                        loading={loading}
+                        pagination={{
+                          pageSize: 10,
+                          showSizeChanger: true,
+                          showTotal: (total) => `共 ${total} 道菜品`,
+                        }}
+                        locale={{
+                          emptyText: (
+                            <Empty
+                              image={Empty.PRESENTED_IMAGE_SIMPLE}
+                              description={
+                                selectedCategory === 'all'
+                                  ? '暂无菜品，点击上方按钮添加'
+                                  : '该分类下暂无菜品'
+                              }
+                            />
+                          ),
+                        }}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+              ),
+            },
+            {
+              key: 'categories',
+              label: (
                 <span>
                   <AppstoreOutlined /> 分类管理
                 </span>
-              }
-              key="categories"
-            >
-              <div style={{ padding: 24 }}>
-                <Table
-                  rowKey="id"
-                  columns={categoryColumns}
-                  dataSource={categories}
-                  loading={loading}
-                  pagination={false}
-                  locale={{
-                    emptyText: (
-                      <Empty
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description="暂无分类，点击上方按钮添加"
-                      />
-                    ),
-                  }}
-                />
-              </div>
-            </TabPane>
-          </Tabs>
-        </Card>
-      </Content>
+              ),
+              children: (
+                <div style={{ padding: 24 }}>
+                  <div style={{ marginBottom: 16, textAlign: 'right' }}>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={handleAddCategory}
+                      loading={saving}
+                    >
+                      新增分类
+                    </Button>
+                  </div>
+                  <Table
+                    rowKey="id"
+                    columns={categoryColumns}
+                    dataSource={categories}
+                    loading={loading}
+                    pagination={false}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description="暂无分类，点击上方按钮添加"
+                        />
+                      ),
+                    }}
+                  />
+                </div>
+              ),
+            },
+          ]}
+        />
+      </Card>
 
-      {/* 分类编辑/新增 Modal */}
       <Modal
         title={editingCategory ? '编辑分类' : '新增分类'}
         open={categoryModalVisible}
@@ -543,7 +483,6 @@ export default function MenuManagePage() {
         </Form>
       </Modal>
 
-      {/* 菜品编辑/新增 Modal */}
       <Modal
         title={editingDish ? '编辑菜品' : '新增菜品'}
         open={dishModalVisible}
@@ -598,28 +537,15 @@ export default function MenuManagePage() {
           </Form.Item>
 
           <Form.Item name="description" label="菜品描述">
-            <TextArea
-              rows={3}
-              placeholder="描述菜品特色、口味等"
-              maxLength={200}
-              showCount
-            />
+            <TextArea rows={3} placeholder="描述菜品特色、口味等" maxLength={200} showCount />
           </Form.Item>
 
           <Form.Item name="imageUrl" label="图片链接">
             <Input placeholder="https://..." size="large" prefix={<PictureOutlined />} />
           </Form.Item>
 
-          <Form.Item
-            name="available"
-            label="售卖状态"
-            valuePropName="checked"
-          >
-            <Switch
-              checkedChildren="在售"
-              unCheckedChildren="下架"
-              style={{ width: 70 }}
-            />
+          <Form.Item name="available" label="售卖状态" valuePropName="checked">
+            <Switch checkedChildren="在售" unCheckedChildren="下架" style={{ width: 70 }} />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
@@ -648,6 +574,6 @@ export default function MenuManagePage() {
           white-space: nowrap;
         }
       `}</style>
-    </Layout>
+    </div>
   )
 }

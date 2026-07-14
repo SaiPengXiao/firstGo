@@ -30,7 +30,7 @@ const initialState: AuthState = {
   user: loadUserFromStorage(),
   token: loadTokenFromStorage(),
   isAuthenticated: Boolean(loadTokenFromStorage()),
-  authReady: !loadTokenFromStorage(),
+  authReady: false,
 }
 
 const authSlice = createSlice({

@@ -1,4 +1,4 @@
-import { LockOutlined, MailOutlined, UserOutlined, ThunderboltOutlined, GithubOutlined, GoogleOutlined, WechatOutlined } from '@ant-design/icons'
+import { LockOutlined, MailOutlined, UserOutlined, ShopOutlined, GithubOutlined, GoogleOutlined, WechatOutlined } from '@ant-design/icons'
 import { Button, Divider, Form, Input, Typography, message } from 'antd'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -44,24 +44,24 @@ export default function RegisterPage() {
           <div className="auth-left-inner">
             <div className="auth-left-logo">
               <div className="auth-left-logo-icon">
-                <ThunderboltOutlined />
+                <ShopOutlined />
               </div>
-              <span className="auth-left-logo-text">DevHub</span>
+              <span className="auth-left-logo-text">点餐后台</span>
             </div>
 
             <div className="auth-left-quote">
               <Title level={1} className="auth-left-title">
-                加入<br />我们
+                创建<br />账号
               </Title>
               <Paragraph className="auth-left-desc">
-                记录技术思考，沉淀实战经验，一起成长。
+                注册后即可登录点餐小程序后台，开始管理门店。
               </Paragraph>
             </div>
 
             <div className="auth-left-pills">
-              <span className="auth-left-pill">分享见解</span>
-              <span className="auth-left-pill">协作研究</span>
-              <span className="auth-left-pill">共建工具</span>
+              <span className="auth-left-pill">营业概览</span>
+              <span className="auth-left-pill">菜单配置</span>
+              <span className="auth-left-pill">订单管理</span>
             </div>
           </div>
         </div>

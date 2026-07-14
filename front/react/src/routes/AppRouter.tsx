@@ -1,13 +1,13 @@
 import { Spin } from 'antd'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
 import GuestRoute from './GuestRoute'
 import ProtectedRoute from './ProtectedRoute'
 
 const HomePage = lazy(() => import('../pages/HomePage'))
 const LoginPage = lazy(() => import('../pages/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/RegisterPage'))
-const MenuOrderPage = lazy(() => import('../pages/MenuOrderPage'))
 const MenuManagePage = lazy(() => import('../pages/MenuManagePage'))
 const OrderListPage = lazy(() => import('../pages/OrderListPage'))
 
@@ -24,6 +24,10 @@ function RouteFallback() {
       <Spin size="large" />
     </div>
   )
+}
+
+function AdminPage({ children }: { children: ReactNode }) {
+  return <AdminLayout>{children}</AdminLayout>
 }
 
 export default function AppRouter() {
@@ -52,15 +56,9 @@ export default function AppRouter() {
             path="/home"
             element={
               <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/menu"
-            element={
-              <ProtectedRoute>
-                <MenuOrderPage />
+                <AdminPage>
+                  <HomePage />
+                </AdminPage>
               </ProtectedRoute>
             }
           />
@@ -68,7 +66,9 @@ export default function AppRouter() {
             path="/menu/manage"
             element={
               <ProtectedRoute roles={['admin']}>
-                <MenuManagePage />
+                <AdminPage>
+                  <MenuManagePage />
+                </AdminPage>
               </ProtectedRoute>
             }
           />
@@ -76,7 +76,9 @@ export default function AppRouter() {
             path="/orders"
             element={
               <ProtectedRoute roles={['admin']}>
-                <OrderListPage />
+                <AdminPage>
+                  <OrderListPage />
+                </AdminPage>
               </ProtectedRoute>
             }
           />

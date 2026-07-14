@@ -1,4 +1,4 @@
-import { LockOutlined, UserOutlined, ThunderboltOutlined, GithubOutlined, GoogleOutlined, WechatOutlined } from '@ant-design/icons'
+import { LockOutlined, UserOutlined, ShopOutlined, GithubOutlined, GoogleOutlined, WechatOutlined } from '@ant-design/icons'
 import { Button, Divider, Form, Input, Typography, message } from 'antd'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -49,9 +49,9 @@ export default function LoginPage() {
           <div className="auth-left-inner">
             <div className="auth-left-logo">
               <div className="auth-left-logo-icon">
-                <ThunderboltOutlined />
+                <ShopOutlined />
               </div>
-              <span className="auth-left-logo-text">DevHub</span>
+              <span className="auth-left-logo-text">点餐后台</span>
             </div>
 
             <div className="auth-left-quote">
@@ -59,14 +59,14 @@ export default function LoginPage() {
                 欢迎<br />回来
               </Title>
               <Paragraph className="auth-left-desc">
-                探索前沿技术思考，与同行共建未来。
+                管理菜单、查看订单、掌握每日营业数据。
               </Paragraph>
             </div>
 
             <div className="auth-left-pills">
-              <span className="auth-left-pill">前沿思考</span>
-              <span className="auth-left-pill">开放协作</span>
-              <span className="auth-left-pill">实战沉淀</span>
+              <span className="auth-left-pill">营业概览</span>
+              <span className="auth-left-pill">菜单配置</span>
+              <span className="auth-left-pill">订单管理</span>
             </div>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
             <div className="auth-right-header">
               <Title level={2} className="auth-right-title">登录</Title>
               <Text className="auth-right-switch">
-                还没有账号？<Link to="/register">立即注册</Link>
+                还没有账号？<Link to="/login">立即注册</Link>
               </Text>
             </div>
 

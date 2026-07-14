@@ -15,6 +15,22 @@ function strId(v: string | number | undefined): string {
   return String(v)
 }
 
+function pickImageUrl(raw: ApiMenuItem): string | undefined {
+  const candidates = [
+    raw.imageUrl,
+    raw.image_url,
+    raw.image,
+    raw.img,
+    raw.picUrl,
+    raw.pic_url,
+    raw.cover,
+  ]
+  for (const v of candidates) {
+    if (typeof v === 'string' && v.trim()) return v.trim()
+  }
+  return undefined
+}
+
 export function normalizeMenuItem(raw: ApiMenuItem, categoryIdFallback?: string): MenuItem {
   const categoryId =
     strId(raw.categoryId ?? raw.category_id) || categoryIdFallback || ''
@@ -24,8 +40,8 @@ export function normalizeMenuItem(raw: ApiMenuItem, categoryIdFallback?: string)
     name: raw.name,
     price: Number(raw.price),
     description: raw.description,
-    imageUrl: raw.imageUrl ?? raw.image_url,
-    available: raw.isAvailable ?? raw.is_available ?? true,
+    imageUrl: pickImageUrl(raw),
+    available: raw.isAvailable ?? raw.is_available ?? raw.available ?? true,
     sortOrder: raw.sortOrder ?? raw.sort_order,
     createdAt: raw.createdAt ?? raw.created_at,
   }

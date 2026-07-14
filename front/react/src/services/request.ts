@@ -50,9 +50,29 @@ request.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
-/** 响应拦截：统一错误为 Error，便于页面 message.error */
+interface ApiEnvelope<T = unknown> {
+  code: number
+  data: T
+  message?: string
+}
+
+function isApiEnvelope(body: unknown): body is ApiEnvelope {
+  return (
+    typeof body === 'object' &&
+    body !== null &&
+    'code' in body &&
+    'data' in body
+  )
+}
+
+/** 响应拦截：解包后端 {code, data, message} 信封，并统一错误为 Error */
 request.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (isApiEnvelope(response.data)) {
+      response.data = response.data.data
+    }
+    return response
+  },
   (error: AxiosError<ApiErrorBody>) => {
     return Promise.reject(new Error(getErrorMessage(error)))
   },

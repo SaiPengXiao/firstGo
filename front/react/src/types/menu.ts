@@ -50,8 +50,14 @@ export interface ApiMenuItem {
   description?: string
   imageUrl?: string
   image_url?: string
+  image?: string
+  img?: string
+  picUrl?: string
+  pic_url?: string
+  cover?: string
   isAvailable?: boolean
   is_available?: boolean
+  available?: boolean
   sortOrder?: number
   sort_order?: number
   createdAt?: string

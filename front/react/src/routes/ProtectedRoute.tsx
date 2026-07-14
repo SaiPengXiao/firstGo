@@ -20,7 +20,7 @@ export default function ProtectedRoute({ children, roles }: ProtectedRouteProps)
   if (roles && roles.length > 0) {
     const hasRole = (user?.roles ?? []).some((r) => roles.includes(r))
     if (!hasRole) {
-      return <Navigate to="/menu" replace />
+      return <Navigate to="/home" replace />
     }
   }
 
